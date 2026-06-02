@@ -1,6 +1,6 @@
 # AGENTS.md
 
-> **Sync banner.** Sections in this file marked `(synced from playbook → <file>.md)` are inline copies from [`dragonflowio/playbook`](https://github.com/dragonflowio/playbook) at commit `a5cc222`. Don't edit those sections here — open PRs against the playbook. Untagged sections and sections marked `(project)` are specific to this repo.
+> **Sync banner.** Sections in this file marked `(synced from playbook → <file>.md)` are inline copies from [`dragonflowio/playbook`](https://github.com/dragonflowio/playbook) at commit `f7d651a`. Don't edit those sections here — open PRs against the playbook. Untagged sections and sections marked `(project)` are specific to this repo.
 
 ## What this repo is *(project)*
 
@@ -40,6 +40,15 @@ Slugs are lowercase, kebab-case, short. No PII, no secrets, no internal acronyms
 **One branch per plan.** Each plan declares its concrete branch name in its header. When you pick up a plan, your first git action is to check out (or create) that branch. If the branch already exists with uncommitted history that doesn't match what you expect: if you wrote that history in a prior session, treat it as resumed work; if you didn't, pause and ask the user.
 
 **One PR per plan.** Open a **draft PR as soon as you have a first commit**, and keep that PR as the review unit for the entire plan. The PR description points back to the plan file. WIP commits are fine — they get squashed at merge time. Mark the PR ready-for-review (un-draft it) only when you finish the Verify phase.
+
+**Chore PRs and meta-only changes.** `chore/` PRs that touch only meta files (`adopters/*`, `STATUS.md`, sync-banner SHA bumps, `CHANGELOG.md`, lint config, `.gitignore`, README clarifications — no code-behavior change) follow a lighter workflow than plan PRs:
+
+- Open as a **normal PR (not draft)**. There is no Verify phase to complete first.
+- **The agent that opens the PR also squash-merges it** in the same turn via `gh pr merge --squash --delete-branch`, and reports the merged state. No "is this ready?" round-trip — the diff is the whole story.
+- **Stop and ask only when:** (a) the diff includes anything outside pure meta files; (b) the PR is in a different repo than the one the agent is operating in (cross-repo PRs lose context — confirm before merging); (c) the agent has any uncertainty about what the diff does. End the turn with: *"Ready to squash-merge — confirm? (chore PR — [reason for asking])"*.
+- **Never leave a chore PR hanging.** A chore PR opened and silently dropped is the failure mode this rule exists to prevent.
+
+This does **not** apply to `feat/plan-*` PRs (they follow the *Plan lifecycle* two-pause-point rule below and need user say-so at *Review & merge*) or to `fix/*` PRs (those touch code and need real review).
 
 ## Plan drafting *(synced from playbook → plan-drafting.md)*
 
