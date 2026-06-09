@@ -117,6 +117,21 @@ function toGoogleContents(messages: ProviderRequest["messages"]) {
         ],
       };
     }
+    if (message.role === "assistant" && message.toolCalls?.length) {
+      const parts: Array<Record<string, unknown>> = [];
+      if (message.content) {
+        parts.push({ text: message.content });
+      }
+      for (const call of message.toolCalls) {
+        parts.push({
+          functionCall: {
+            name: call.name,
+            args: call.arguments ?? {},
+          },
+        });
+      }
+      return { role: "model", parts };
+    }
     return {
       role: message.role === "assistant" ? "model" : "user",
       parts: [{ text: message.content }],

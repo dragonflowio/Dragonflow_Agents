@@ -65,6 +65,53 @@ describe("createAnthropicProvider", () => {
     expect(out.toolCalls).toEqual([{ id: "t_1", name: "lookup", arguments: { id: "abc" } }]);
   });
 
+  it("reconstructs tool_use blocks when echoing an assistant turn that called tools", async () => {
+    // Regression: when invoke() pushes the assistant message back after a
+    // tool call, the provider must serialize the previous tool_use blocks
+    // alongside the text. Otherwise the next tool_result is orphaned and
+    // Anthropic returns 400.
+    const seenRequest: { init?: RequestInit } = {};
+    const provider = createAnthropicProvider({
+      apiKey: "k",
+      fetch: async (_url, init) => {
+        seenRequest.init = init as RequestInit;
+        return jsonResponse({
+          content: [{ type: "text", text: "done" }],
+          usage: { input_tokens: 1, output_tokens: 1 },
+        });
+      },
+    });
+    await provider.generate({
+      model: "m",
+      system: "",
+      messages: [
+        { role: "user", content: "go" },
+        {
+          role: "assistant",
+          content: "thinking…",
+          toolCalls: [{ id: "t_1", name: "lookup", arguments: { id: "abc" } }],
+        },
+        { role: "tool", tool_call_id: "t_1", content: '{"ok":true}' },
+      ],
+      max_tokens: 10,
+    });
+    const body = JSON.parse(seenRequest.init!.body as string);
+    expect(body.messages).toEqual([
+      { role: "user", content: "go" },
+      {
+        role: "assistant",
+        content: [
+          { type: "text", text: "thinking…" },
+          { type: "tool_use", id: "t_1", name: "lookup", input: { id: "abc" } },
+        ],
+      },
+      {
+        role: "user",
+        content: [{ type: "tool_result", tool_use_id: "t_1", content: '{"ok":true}' }],
+      },
+    ]);
+  });
+
   it("throws provider on non-200", async () => {
     const provider = createAnthropicProvider({
       apiKey: "k",

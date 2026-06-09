@@ -17,7 +17,7 @@ export type AgentRowConfig = {
 
 export type ChatMessage =
   | { role: "user"; content: string }
-  | { role: "assistant"; content: string }
+  | { role: "assistant"; content: string; toolCalls?: ProviderToolCall[] }
   | { role: "tool"; tool_call_id: string; content: string };
 
 export type InvokeInput =
