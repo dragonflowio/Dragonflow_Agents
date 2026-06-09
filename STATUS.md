@@ -8,7 +8,7 @@
 
 | Plan | Branch | Agent | Last commit | Status |
 |---|---|---|---|---|
-| [Plan 3 — Runtime library](docs/plans/plan-3-runtime-library-2026-06-09.md) | `feat/plan-3-runtime-library` | Claude Opus 4.7 | 2026-06-09 | drafting + executing |
+| _None in flight._ |  |  |  |  |
 
 ## Backlog
 

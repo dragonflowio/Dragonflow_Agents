@@ -1,8 +1,8 @@
 ---
 kind: feature
 autonomy: needs-checkpoints
-status: in-progress
-completed_on:
+status: completed
+completed_on: 2026-06-09
 repos:
   - Dragonflow_Agents
 ---
@@ -18,10 +18,10 @@ repos:
   STATUS.md row.
 -->
 
-**Status:** In progress
+**Status:** Completed 2026-06-09 ([Dragonflow_Agents#6](https://github.com/dragonflowio/Dragonflow_Agents/pull/6), [#7](https://github.com/dragonflowio/Dragonflow_Agents/pull/7))
 **Created:** 2026-06-09
 **Repo:** `Dragonflow_Agents`
-**Branch:** `feat/plan-3-runtime-library`
+**Branch:** `feat/plan-3-runtime-library` (merged)
 **Intended owner:** One implementation agent
 **Related:**
 - [Agent-runtime blueprint (2026-06-06)](https://github.com/dragonflowio/playbook/blob/main/docs/agent-runtime-blueprint-2026-06-06.md) — Plan 3's spec in the eight-plan thread.
