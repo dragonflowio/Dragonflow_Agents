@@ -1,4 +1,4 @@
-# agent-playground — experience
+# Dragonflow_Agents — experience
 
 **Last updated:** 2026-06-01
 **Status:** WIP — stub seeded at playbook adoption. Only *Purpose* and *Audience* are filled in. Per [`docs/UX/experience.md`](../experience.md), feature-walkthrough content follows the build, not the other way around; the remaining sections will be filled as features land on `main`.
