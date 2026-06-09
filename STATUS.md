@@ -8,7 +8,7 @@
 
 | Plan | Branch | Agent | Last commit | Status |
 |---|---|---|---|---|
-| _None in flight._ |  |  |  |  |
+| [Plan 5-pre-a — Land the management surface](docs/plans/plan-5-pre-a-management-surface-2026-06-09.md) | `feat/plan-5-pre-a-management-surface` | claude-opus-4-7 | 2026-06-09 | drafted; code phase next |
 
 ## Backlog
 
