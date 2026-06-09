@@ -13,6 +13,7 @@ export function getPlaygroundRuntime(): Runtime {
 
   cached = createRuntime({
     supabase: { client: createServerClient() },
+    cache: { ttlMs: 1000 },
   })
 
   return cached
