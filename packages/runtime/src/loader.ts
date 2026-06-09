@@ -136,5 +136,18 @@ function normalizeConfig(slug: string, raw: unknown): AgentRowConfig {
     });
   }
 
+  const temperature = config.temperature;
+  if (temperature !== undefined) {
+    if (typeof temperature !== "number" || !Number.isFinite(temperature) || temperature < 0) {
+      throw new AgentRuntimeError({
+        type: "load",
+        slug,
+        cause: new Error(
+          `Agent row for slug "${slug}" has invalid config.temperature (${JSON.stringify(temperature)}).`
+        ),
+      });
+    }
+  }
+
   return { ...config, provider, max_tokens } as AgentRowConfig;
 }

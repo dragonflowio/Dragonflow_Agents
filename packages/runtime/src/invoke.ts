@@ -53,6 +53,9 @@ export function createInvoke(deps: InvokeDeps) {
           system,
           messages: conversation,
           max_tokens: row.config.max_tokens,
+          ...(typeof row.config.temperature === "number"
+            ? { temperature: row.config.temperature }
+            : {}),
           tools: tools ? listProviderTools(tools) : undefined,
           signal,
         });

@@ -1,5 +1,20 @@
 # `@dragonflowio/agent-runtime` changelog
 
+## 0.2.2 — 2026-06-09
+
+**Bugfix.** The runtime accepted `config.temperature` on agent rows (the type allowed it implicitly via the `[key: string]: unknown` index signature) but silently dropped it on the wire — every provider call used the provider's default temperature. Rows that authored a non-default temperature were effectively ignored.
+
+- `types.ts` — `AgentRowConfig` gains an optional `temperature?: number` field. Backwards-compatible; consumers without a temperature on the row are unaffected.
+- `loader.ts` — validates `config.temperature` when present (must be a finite non-negative number); rejects with the `load` error variant otherwise.
+- `providers/types.ts` — `ProviderRequest` gains optional `temperature?: number`.
+- `invoke.ts` — forwards `row.config.temperature` to the provider when defined; omits it otherwise (preserves prior-default behavior for rows that don't author one).
+- `providers/anthropic.ts` — adds `temperature` to the Messages API body when defined.
+- `providers/openai.ts` — adds `temperature` to the chat-completions body when defined.
+- `providers/google.ts` — adds `temperature` to `generationConfig` alongside `maxOutputTokens` when defined.
+- Tests: per-provider tests assert temperature is forwarded when set and omitted when unset; loader test covers the validate path; `invoke.test.ts` covers the row-to-provider plumbing both ways.
+
+Surfaced by [`Proveedores-Admin` Plan 6 kickoff](https://github.com/dragonflowio/Proveedores-Admin) — every agent row in that project authors `config.temperature` (0.1–0.4); shipping Plan 6 against `0.2.1` would have silently regressed output quality across CUCOP suggestion, requirements comparison, and the newsletter narrator pipeline. Canvas did not surface this because its rows did not author non-default temperatures.
+
 ## 0.2.1 — 2026-06-09
 
 **Bugfix.** Tool loops broke against every provider — after a tool call, the runtime echoed the assistant turn back without the `tool_use` / `tool_calls` / `functionCall` blocks, so the next `tool_result` was orphaned and providers rejected the request with HTTP 400.

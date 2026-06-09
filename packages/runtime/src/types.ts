@@ -12,6 +12,7 @@ export type AgentRow = {
 export type AgentRowConfig = {
   provider: AgentProvider;
   max_tokens: number;
+  temperature?: number;
   [key: string]: unknown;
 };
 

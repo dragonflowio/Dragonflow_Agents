@@ -17,7 +17,10 @@ export function createGoogleProvider(env: ProviderEnv): Provider {
           ? { role: "system", parts: [{ text: req.system }] }
           : undefined,
         contents: toGoogleContents(req.messages),
-        generationConfig: { maxOutputTokens: req.max_tokens },
+        generationConfig: {
+          maxOutputTokens: req.max_tokens,
+          ...(typeof req.temperature === "number" ? { temperature: req.temperature } : {}),
+        },
         ...(req.tools?.length
           ? {
               tools: [

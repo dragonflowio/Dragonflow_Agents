@@ -47,6 +47,48 @@ function setupInvoke(rows: AgentRow[], scripted: Array<ProviderResponse | Error>
 }
 
 describe("invoke", () => {
+  it("passes config.temperature through to provider.generate when present", async () => {
+    const loader = createLoader({
+      client: createFixtureSupabase([
+        { ...textRow, config: { ...textRow.config, temperature: 0.25 } },
+      ]),
+    });
+    const seen: Array<{ temperature?: number }> = [];
+    const provider: Provider = {
+      async generate(req) {
+        seen.push({ temperature: req.temperature });
+        return {
+          content: "ok",
+          toolCalls: [],
+          usage: { input_tokens: 0, output_tokens: 0 },
+          raw: {},
+        };
+      },
+    };
+    const invoke = createInvoke({ loader, providerFor: () => provider });
+    await invoke({ slug: "writer", input: "x" });
+    expect(seen[0]!.temperature).toBe(0.25);
+  });
+
+  it("omits temperature on provider.generate when row has none", async () => {
+    const loader = createLoader({ client: createFixtureSupabase([textRow]) });
+    const seen: Array<{ temperature?: number }> = [];
+    const provider: Provider = {
+      async generate(req) {
+        seen.push({ temperature: req.temperature });
+        return {
+          content: "ok",
+          toolCalls: [],
+          usage: { input_tokens: 0, output_tokens: 0 },
+          raw: {},
+        };
+      },
+    };
+    const invoke = createInvoke({ loader, providerFor: () => provider });
+    await invoke({ slug: "writer", input: "x" });
+    expect(seen[0]!.temperature).toBeUndefined();
+  });
+
   it("handles a single-turn plain-text agent", async () => {
     const { invoke } = setupInvoke(
       [textRow],

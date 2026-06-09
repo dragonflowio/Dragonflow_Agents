@@ -44,6 +44,35 @@ describe("createAnthropicProvider", () => {
     expect((seenRequest.init!.headers as Record<string, string>)["x-api-key"]).toBe("k");
   });
 
+  it("forwards temperature when provided and omits it when undefined", async () => {
+    const seenBodies: Array<Record<string, unknown>> = [];
+    const provider = createAnthropicProvider({
+      apiKey: "k",
+      fetch: async (_url, init) => {
+        seenBodies.push(JSON.parse((init as RequestInit).body as string));
+        return jsonResponse({
+          content: [{ type: "text", text: "ok" }],
+          usage: { input_tokens: 1, output_tokens: 1 },
+        });
+      },
+    });
+    await provider.generate({
+      model: "m",
+      system: "",
+      messages: [{ role: "user", content: "x" }],
+      max_tokens: 10,
+      temperature: 0.3,
+    });
+    await provider.generate({
+      model: "m",
+      system: "",
+      messages: [{ role: "user", content: "x" }],
+      max_tokens: 10,
+    });
+    expect(seenBodies[0]!.temperature).toBe(0.3);
+    expect("temperature" in seenBodies[1]!).toBe(false);
+  });
+
   it("extracts tool_use blocks", async () => {
     const provider = createAnthropicProvider({
       apiKey: "k",
