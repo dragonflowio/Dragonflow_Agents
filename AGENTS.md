@@ -1,6 +1,6 @@
 # AGENTS.md
 
-> **Sync banner.** Sections in this file marked `(synced from playbook → <file>.md)` are inline copies from [`dragonflowio/playbook`](https://github.com/dragonflowio/playbook) at commit `f7d651a`. Don't edit those sections here — open PRs against the playbook. Untagged sections and sections marked `(project)` are specific to this repo.
+> **Sync banner.** Sections in this file marked `(synced from playbook → <file>.md)` are inline copies from [`dragonflowio/playbook`](https://github.com/dragonflowio/playbook) at commit `e97429d`. Don't edit those sections here — open PRs against the playbook. Untagged sections and sections marked `(project)` are specific to this repo.
 
 ## What this repo is *(project)*
 
@@ -26,7 +26,7 @@ This repo is a **sibling repo** to [`Dragonflow_Core`](https://github.com/dragon
 
 ## Branch and PR conventions *(synced from playbook → branch-naming.md)*
 
-One branch per plan, one (draft) PR per plan. The branch is the unit of review and the unit of agent handoff.
+One branch per plan, one PR per plan. The branch is the unit of review and the unit of agent handoff.
 
 **Naming:**
 
@@ -39,14 +39,27 @@ Slugs are lowercase, kebab-case, short. No PII, no secrets, no internal acronyms
 
 **One branch per plan.** Each plan declares its concrete branch name in its header. When you pick up a plan, your first git action is to check out (or create) that branch. If the branch already exists with uncommitted history that doesn't match what you expect: if you wrote that history in a prior session, treat it as resumed work; if you didn't, pause and ask the user.
 
-**One PR per plan.** Open a **draft PR as soon as you have a first commit**, and keep that PR as the review unit for the entire plan. The PR description points back to the plan file. WIP commits are fine — they get squashed at merge time. Mark the PR ready-for-review (un-draft it) only when you finish the Verify phase.
+**One PR per plan.** Open a PR as soon as you have a first commit, and keep that PR as the review unit for the entire plan. The PR description points back to the plan file. WIP commits are fine — they get squashed at merge time.
+
+**Draft vs. ready-for-review.** Draft = agent is still iterating; reviewer should not look yet. Ready-for-review = the next action is the reviewer's. Never open or leave a PR as draft when you're asking the user to take a review action on it — draft state signals who acts next, and getting it wrong forces the user to ask "is this for me?"
+
+Default flow for a `feat/plan-*` PR with code: (1) open as draft on first commit; (2) stay in draft through Code and Verify; (3) convert to ready-for-review when Verify passes (this is the signal that *Review & merge* has begun).
+
+**Carve-out for plan-only first commits.** When the first (and only) commit on the branch is the plan file itself and you are asking the user to review the plan before any implementation, **open the PR ready-for-review, not draft** — the plan IS what they're being asked to look at. After approval, convert the PR back to draft as the first implementation commit lands, then follow the default flow from Verify onward.
 
 **Chore PRs and meta-only changes.** `chore/` PRs that touch only meta files (`adopters/*`, `STATUS.md`, sync-banner SHA bumps, `CHANGELOG.md`, lint config, `.gitignore`, README clarifications — no code-behavior change) follow a lighter workflow than plan PRs:
 
 - Open as a **normal PR (not draft)**. There is no Verify phase to complete first.
 - **The agent that opens the PR also squash-merges it** in the same turn via `gh pr merge --squash --delete-branch`, and reports the merged state. No "is this ready?" round-trip — the diff is the whole story.
-- **Stop and ask only when:** (a) the diff includes anything outside pure meta files; (b) the PR is in a different repo than the one the agent is operating in (cross-repo PRs lose context — confirm before merging); (c) the agent has any uncertainty about what the diff does. End the turn with: *"Ready to squash-merge — confirm? (chore PR — [reason for asking])"*.
+- **Stop and ask only when:** (a) the diff includes anything outside pure meta files; (b) the PR is cross-repo (opened in a different repo than the one the agent is operating in) **and** the session does not carry a cross-repo opt-in (see below); (c) the agent has any uncertainty about what the diff does. End the turn with: *"Ready to squash-merge — confirm? (chore PR — [reason for asking])"*.
 - **Never leave a chore PR hanging.** A chore PR opened and silently dropped is the failure mode this rule exists to prevent.
+
+**Cross-repo opt-in.** A meta-only chore PR opened in a repo other than the one the agent is currently operating in still auto-squash-merges when the session carries one of these signals:
+
+- **In-session opt-in.** The user has said "merge it" (or equivalent) for this or an earlier cross-repo chore PR in the current session. The opt-in stands for the remainder of the session and applies to *meta-only* chore PRs only.
+- **Durable opt-in.** This repo's `AGENTS.md` / `CLAUDE.md` carries an explicit note naming an upstream repo whose meta-only chore PRs may auto-merge from sessions here. A blanket "any repo" is not accepted.
+
+Absent either signal, the cross-repo case still falls into clause (b) and requires the explicit disposition line. Never infer an opt-in from context; uncertainty about whether one was given is itself uncertainty under clause (c).
 
 This does **not** apply to `feat/plan-*` PRs (they follow the *Plan lifecycle* two-pause-point rule below and need user say-so at *Review & merge*) or to `fix/*` PRs (those touch code and need real review).
 
@@ -67,11 +80,11 @@ Don't leave open questions in Implementation Steps — decisions belong in the p
 
 An *implementation plan* has **six phases**. The plan is *implemented* (and *done*) only when all six are complete:
 
-1. **Code** — write and commit the source changes.
+1. **Code** — the **first commit on the plan's branch is the plan file itself**; subsequent commits add the source changes (UI, API, library code, schema migration files, seed scripts, etc.). A plan file that exists only on disk — uncommitted — has not entered Phase 1 yet.
 2. **Migrate** — *apply* any migrations, seed scripts, or production-state changes the plan introduces. Writing the migration file is part of Code; running it against the live system is Migrate and is its own phase.
-3. **Verify** — walk through every acceptance criterion in the plan's *Acceptance Criteria* section and report pass/fail with evidence.
-4. **Review & merge** — the PR is reviewed, marked ready-for-review, and merged to main.
-5. **STATUS update** — the plan's row is removed from `STATUS.md` *Active plans*.
+3. **Verify** — walk through every acceptance criterion in the plan's *Acceptance Criteria* section and report pass/fail with evidence (file path, test output, manual verification note, or "N/A — covered by criterion X").
+4. **Review & merge** — the PR is reviewed, marked ready-for-review (not draft), and merged to main.
+5. **STATUS update** — the plan's row is removed from `STATUS.md` *Active plans* **and** the plan file's own frontmatter is flipped to `status: completed`, `completed_on: YYYY-MM-DD`, in the same commit. The plan file persists as the historical record; "Done" views are derived from plan-file frontmatter, not from a STATUS.md bucket.
 6. **Handoff** — the next plan path is given to the user per the plan's *Handoff to next plan* section.
 
 **Vocabulary — use these words precisely:**
@@ -82,12 +95,14 @@ An *implementation plan* has **six phases**. The plan is *implemented* (and *don
 
 **Drive the lifecycle automatically.** Walking the plan through all six phases is *your job*, not the user's. Do not stop after one phase and wait for them to ask "what's next?"
 
+**Phase 1 starts with the plan file.** The first commit on the plan's branch is the plan file itself, pushed to `origin` in the same turn it's drafted — before any source changes. This closes the gap between drafting (file only on disk) and Phase 1 (branch is the unit of agent handoff). Without this rule, the next agent walks into an untracked `docs/plans/plan-*.md` in someone else's tree and cannot tell whether it's WIP, abandoned, or ready to pick up. The plan-file commit can land as the first commit of a single PR that also carries the implementation, or — when the plan needs review before any code is written — on its own commit in a plan-only PR that opens **ready-for-review, not draft** (see *Draft vs. ready-for-review* above). Subsequent implementation commits convert the PR back to draft until Verify.
+
 **The two pause points** — only these phases require the user before you can continue:
 
 - **Migrate.** After Code is complete, report the migration's DDL summary, what it touches, whether anything is irreversible, and the rollback. Then wait for "go ahead." Once authorized, apply it and continue immediately to Verify.
-- **Review & merge.** After Verify passes, prep the PR (description summarizing the change, link to the plan file, list of applied migrations, notes on any unrelated pre-existing test/lint failures), mark it ready-for-review, and tell the user. Then wait for the user to confirm the PR is merged.
+- **Review & merge.** After Verify passes, prep the PR (description summarizing the change, link to the plan file, list of applied migrations, notes on any unrelated pre-existing test/lint failures), mark it ready-for-review (un-draft it), and tell the user. Then wait for the user to confirm the PR is merged.
 
-**Everything else you execute without being prompted** — Code happens as the plan work; Verify happens immediately after Code (mark Migrate-dependent criteria as "Blocked on Migrate phase" rather than fail, then re-walk them after Migrate); STATUS update happens immediately after the user confirms the merge; Handoff happens immediately after STATUS update.
+**Everything else you execute without being prompted** — Code happens as the plan work; Verify happens immediately after Code (mark Migrate-dependent criteria as "Blocked on Migrate phase" rather than fail, then re-walk them after Migrate); STATUS update happens immediately after the user confirms the merge (single commit pushed directly to main: remove the active-plans row **and** flip the plan-file frontmatter to `status: completed`, `completed_on: <merge date>`, and update the human-readable `**Status:**` line in the plan body to match); Handoff happens immediately after STATUS update.
 
 **Never apply migrations silently.** Writing a migration file is implementation work. Applying it is a deliberate, consequential operation on shared state. Always ask before applying, and surface what will change.
 
@@ -134,7 +149,7 @@ The promotion path for future work: idea → one-line backlog entry → pre-plan
 
 1. **Idea → one-line entry in `STATUS.md` *Backlog*.** Date it. Include enough context to remember the *why* later.
 2. **Entry grows past ~50 words → pre-plan file.** Create `docs/pre-plan-<topic>-<YYYY-MM-DD>.md` (or `docs/<area>/pre-plan-<topic>-<YYYY-MM-DD>.md` for area-specific work). Shrink the backlog entry to a one-line pointer to the file.
-3. **Pre-plan ripens into real work → promote to a plan.** Rename to `plan-<topic>-<YYYY-MM-DD>.md`, give it a branch per the naming convention, add it to the *Plan Sequence* section of every other plan in the sequence, and move it from *Backlog* to *Active plans*.
+3. **Pre-plan ripens into real work → promote to a plan.** Rename to `plan-<topic>-<YYYY-MM-DD>.md`, give it a branch per the naming convention, add it to the *Plan Sequence* section of every other plan in the sequence, and move it from *Backlog* to *Active plans*. **Promotion is not complete until the plan file is committed on its declared branch and pushed to `origin`** — a drafted-but-uncommitted plan file is invisible to the next agent and produces dirty-tree handoffs (see *Plan lifecycle* → Phase 1 starts with the plan file).
 4. **When a plan completes, remove its row from *Active plans*.** Phase 5 of the lifecycle.
 
 Don't put new work in code comments, chat scratchpads, or undated docs. Those locations have no readers and the work will get lost.
