@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AgentRuntimeError } from "./errors.js";
 import { createInvoke } from "./invoke.js";
 import { createLoader } from "./loader.js";
+import type { Provider, ProviderResponse } from "./providers/types.js";
 import { createToolRegistry } from "./registry.js";
 import { createFixtureSupabase } from "./test-fixtures.js";
 import type { AgentRow } from "./types.js";
@@ -28,14 +29,17 @@ const toolRow = {
   config: { provider: "anthropic" as const, max_tokens: 100 },
 };
 
-function setupInvoke(rows: AgentRow[], scripted: Array<unknown>) {
+function setupInvoke(rows: AgentRow[], scripted: Array<ProviderResponse | Error>) {
   const loader = createLoader({ client: createFixtureSupabase(rows) });
   let calls = 0;
-  const provider = {
-    async generate() {
+  const provider: Provider = {
+    async generate(): Promise<ProviderResponse> {
       const next = scripted[calls++];
       if (next instanceof Error) throw next;
-      return next as Awaited<ReturnType<typeof provider.generate>>;
+      if (!next) {
+        throw new Error(`No scripted response for call ${calls}`);
+      }
+      return next;
     },
   };
   const invoke = createInvoke({ loader, providerFor: () => provider });
