@@ -1,29 +1,23 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { ToolCall } from '@/lib/chat-types'
 import { MessageBubble } from './MessageBubble'
-import { StreamingMessage } from './StreamingMessage'
 import { PlaygroundMessage } from './types'
 
 export function MessageList({
   messages,
-  streamBuffer,
-  toolCalls,
-  streaming,
+  loading,
 }: {
   messages: PlaygroundMessage[]
-  streamBuffer: string
-  toolCalls: ToolCall[]
-  streaming: boolean
+  loading: boolean
 }) {
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: 'end' })
-  }, [messages, streamBuffer, toolCalls, streaming])
+  }, [messages, loading])
 
-  if (!messages.length && !streaming) {
+  if (!messages.length && !loading) {
     return (
       <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-border/80 bg-surface/30 px-6 text-center">
         <div className="max-w-md space-y-3">
@@ -43,7 +37,17 @@ export function MessageList({
           <MessageBubble key={message.id} message={message} />
         ))}
 
-        {streaming ? <StreamingMessage content={streamBuffer} toolCalls={toolCalls} /> : null}
+        {loading ? (
+          <div className="flex w-full justify-start">
+            <div className="rounded-2xl border border-border bg-surface/80 px-4 py-3 text-sm text-muted shadow-sm">
+              <span className="inline-flex items-center gap-2">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
+                Waiting for the agent…
+              </span>
+            </div>
+          </div>
+        ) : null}
+
         <div ref={bottomRef} />
       </div>
     </div>
