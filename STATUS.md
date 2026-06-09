@@ -8,7 +8,7 @@
 
 | Plan | Branch | Agent | Last commit | Status |
 |---|---|---|---|---|
-| Plan 5 — Playground rewired onto `@dragonflowio/agent-runtime` | feat/plan-5-playground-rewire | claude-opus-4-7 | 2026-06-09 | Phase 1 — plan file drafted, PR open ready-for-review, awaiting user approval before implementation. |
+| Plan 5 — Playground rewired onto `@dragonflowio/agent-runtime` | feat/plan-5-playground-rewire | claude-opus-4-7 | 2026-06-09 | Phase 3 (Verify) — Code complete; static acceptance criteria pass; runtime/manual gates (build on Node 20+, dev-server walkthrough, parity check vs Canvas) pending user verification. |
 
 ## Backlog
 - 2026-06-08 — Six post-v1 deferred features from the original phase 1–4 effort (voice session recording, agentic agent creation, `prompt_id` fetch from OpenAI prompt store, prompt versioning, large file uploads, agent chaining execution). See [`docs/pre-plan-deferred-features-2026-06-08.md`](docs/pre-plan-deferred-features-2026-06-08.md). Triage alongside the `wip/2026-06-01-pre-adoption` work — most items depend on shape decisions there.
