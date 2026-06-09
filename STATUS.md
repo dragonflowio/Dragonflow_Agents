@@ -2,13 +2,13 @@
 
 > **STATUS.md is data, not rules.** The structural conventions (the four-bucket layout, the active-plans table format, the one-line backlog rule, the pre-plan promotion path) are inlined in [AGENTS.md](AGENTS.md) under the *STATUS.md handling* and *Backlog and pre-plans* sections. Read those at session start; come here for the live entries.
 
-**Last updated:** 2026-06-08
+**Last updated:** 2026-06-09
 
 ## Active plans
 
 | Plan | Branch | Agent | Last commit | Status |
 |---|---|---|---|---|
-| _None in flight._ |  |  |  |  |
+| [Plan 3 — Runtime library](docs/plans/plan-3-runtime-library-2026-06-09.md) | `feat/plan-3-runtime-library` | Claude Opus 4.7 | 2026-06-09 | drafting + executing |
 
 ## Backlog
 

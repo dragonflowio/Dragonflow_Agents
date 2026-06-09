@@ -1,0 +1,62 @@
+{
+  "name": "@dragonflowio/agent-runtime",
+  "version": "0.1.0",
+  "description": "Cross-project LLM agent runtime for Dragonflow — loads agent rows from a per-project `agents` Supabase table and invokes Anthropic / Google / OpenAI models against the v0.1 invocation contract.",
+  "license": "MIT",
+  "author": "Dragonflow <fernando@dragonflow.io>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dragonflowio/Dragonflow_Agents.git",
+    "directory": "packages/runtime"
+  },
+  "homepage": "https://github.com/dragonflowio/Dragonflow_Agents/tree/main/packages/runtime#readme",
+  "bugs": "https://github.com/dragonflowio/Dragonflow_Agents/issues",
+  "keywords": [
+    "llm",
+    "agent",
+    "anthropic",
+    "openai",
+    "google",
+    "supabase",
+    "dragonflow"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
+  },
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "@types/node": "^20.12.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.0",
+    "zod": "^3.23.0"
+  }
+}
