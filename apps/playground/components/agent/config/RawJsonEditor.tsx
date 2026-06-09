@@ -16,8 +16,8 @@ export function RawJsonEditor({
   const [jsonStr, setJsonStr] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  // Sync internal string when agent config updates IF we don't have pending edits
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- prop→derived-string mirror; refactor planned in Plan 5
     setJsonStr(JSON.stringify(agent.config || {}, null, 2))
     setError(null)
   }, [agent.config])
@@ -29,8 +29,8 @@ export function RawJsonEditor({
       const parsed = JSON.parse(newVal)
       setError(null)
       onChange({ config: parsed })
-    } catch (e: any) {
-      setError(e.message || 'Invalid JSON')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Invalid JSON')
     }
   }
 

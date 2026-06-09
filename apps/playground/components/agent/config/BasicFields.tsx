@@ -43,7 +43,7 @@ export function BasicFields({
       .catch(console.error)
   }, [])
 
-  const handleConfigChange = (field: string, value: any) => {
+  const handleConfigChange = (field: string, value: unknown) => {
     onChange({
       config: {
         ...agent.config,

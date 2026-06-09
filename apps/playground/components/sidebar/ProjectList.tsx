@@ -32,6 +32,7 @@ export function ProjectList({ activeConnectionId }: { activeConnectionId: string
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount/deps; refactor planned in Plan 5
     loadProjects()
   }, [activeConnectionId, loadProjects])
 

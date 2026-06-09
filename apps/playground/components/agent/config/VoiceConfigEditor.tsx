@@ -16,7 +16,7 @@ export function VoiceConfigEditor({
 
   if (!vc) return null // Handled externally to not render if null in v1
 
-  const updateVc = (key: string, value: any) => {
+  const updateVc = (key: string, value: unknown) => {
     onChange({
       voice_config: {
         ...vc,

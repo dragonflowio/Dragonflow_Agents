@@ -16,14 +16,14 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Invalid PAT or Supabase API error' }, { status: 400 })
     }
 
-    const projects = await res.json()
-    const list = projects.map((p: any) => ({
+    const projects: Array<{ id: string; name: string }> = await res.json()
+    const list = projects.map((p) => ({
       name: p.name,
       supabase_url: `https://${p.id}.supabase.co`,
     }))
 
     return NextResponse.json(list)
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 })
   }
 }

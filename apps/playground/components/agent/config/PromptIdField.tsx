@@ -26,7 +26,7 @@ export function PromptIdField({ promptId }: { promptId: string }) {
       </div>
       
       <p className="text-sm text-muted">
-        This agent uses an external prompt managed in OpenAI's prompt store. The system instruction is not fetched here. To test this agent, paste the prompt text manually into the System Instruction field above.
+        This agent uses an external prompt managed in OpenAI&apos;s prompt store. The system instruction is not fetched here. To test this agent, paste the prompt text manually into the System Instruction field above.
         <br />
         <a href="#" className="text-accent hover:underline mt-1 inline-block">Learn more in future-tasks.md</a>
       </p>

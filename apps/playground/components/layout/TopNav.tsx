@@ -21,6 +21,7 @@ export function TopNav({ initialActiveId = 'home' }: { initialActiveId?: string 
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- prop→state mirror; refactor planned in Plan 5
     setActiveId(initialActiveId)
   }, [initialActiveId])
 

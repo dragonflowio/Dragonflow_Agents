@@ -2,7 +2,7 @@
 
 import { Agent } from '@/lib/types/agent'
 
-export function PlaygroundTab({ agent: _agent }: { agent: Agent }) {
+export function PlaygroundTab(_props: { agent: Agent }) {
   return (
     <div className="flex h-full items-center justify-center p-8">
       <div className="max-w-md rounded-lg border border-border bg-muted/40 p-6 text-sm text-muted-foreground">

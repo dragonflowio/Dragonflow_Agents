@@ -20,6 +20,7 @@ export function SchemaTab({ agent }: { agent: Agent }) {
 
   useEffect(() => {
     const nextConfig = normalizeConfig(agent.config)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- prop→state mirror; refactor planned in Plan 5
     setLocalConfig(nextConfig)
     setConfigText(JSON.stringify(nextConfig, null, 2))
     setConfigError(null)
