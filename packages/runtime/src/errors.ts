@@ -1,10 +1,11 @@
 import type { ZodError } from "zod";
+import type { Usage } from "./types.js";
 
 export type RuntimeError =
   | { type: "load"; slug: string; cause: unknown }
-  | { type: "provider"; cause: unknown }
-  | { type: "parse"; raw: string; cause: unknown }
-  | { type: "validate"; raw: unknown; cause: ZodError }
+  | { type: "provider"; usage?: Usage; cause: unknown }
+  | { type: "parse"; usage?: Usage; raw: string; cause: unknown }
+  | { type: "validate"; usage?: Usage; raw: unknown; cause: ZodError }
   | { type: "tool"; name: string; cause: unknown };
 
 export class AgentRuntimeError extends Error {
@@ -38,6 +39,7 @@ export type SerializedRuntimeError = {
   slug?: string;
   name?: string;
   raw?: unknown;
+  usage?: Usage;
   cause?: { message: string; stack?: string } | string;
 };
 
@@ -49,11 +51,28 @@ export function serializeError(err: unknown): SerializedRuntimeError {
     case "load":
       return { type: detail.type, message: formatMessage(detail), slug: detail.slug, cause };
     case "provider":
-      return { type: detail.type, message: formatMessage(detail), cause };
+      return {
+        type: detail.type,
+        message: formatMessage(detail),
+        ...(detail.usage ? { usage: detail.usage } : {}),
+        cause,
+      };
     case "parse":
-      return { type: detail.type, message: formatMessage(detail), raw: detail.raw, cause };
+      return {
+        type: detail.type,
+        message: formatMessage(detail),
+        ...(detail.usage ? { usage: detail.usage } : {}),
+        raw: detail.raw,
+        cause,
+      };
     case "validate":
-      return { type: detail.type, message: formatMessage(detail), raw: detail.raw, cause };
+      return {
+        type: detail.type,
+        message: formatMessage(detail),
+        ...(detail.usage ? { usage: detail.usage } : {}),
+        raw: detail.raw,
+        cause,
+      };
     case "tool":
       return { type: detail.type, message: formatMessage(detail), name: detail.name, cause };
   }

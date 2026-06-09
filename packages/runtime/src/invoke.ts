@@ -6,6 +6,7 @@ import type { Provider } from "./providers/types.js";
 import type {
   AgentRow,
   ChatMessage,
+  InvokeAgentSummary,
   InvokeArgs,
   InvokeInput,
   InvokeResult,
@@ -13,6 +14,10 @@ import type {
   ToolRegistry,
   Usage,
 } from "./types.js";
+
+function summarizeAgent(row: AgentRow): InvokeAgentSummary {
+  return { name: row.name, model: row.model, provider: row.config.provider };
+}
 
 const MAX_TOOL_LOOPS = 5;
 
@@ -41,14 +46,26 @@ export function createInvoke(deps: InvokeDeps) {
     let attemptedParseRetry = false;
 
     for (let loop = 0; loop < MAX_TOOL_LOOPS; loop++) {
-      const response = await provider.generate({
-        model: row.model,
-        system,
-        messages: conversation,
-        max_tokens: row.config.max_tokens,
-        tools: tools ? listProviderTools(tools) : undefined,
-        signal,
-      });
+      let response;
+      try {
+        response = await provider.generate({
+          model: row.model,
+          system,
+          messages: conversation,
+          max_tokens: row.config.max_tokens,
+          tools: tools ? listProviderTools(tools) : undefined,
+          signal,
+        });
+      } catch (cause) {
+        if (cause instanceof AgentRuntimeError) {
+          throw cause;
+        }
+        throw new AgentRuntimeError({
+          type: "provider",
+          ...(totalUsage.input_tokens || totalUsage.output_tokens ? { usage: { ...totalUsage } } : {}),
+          cause,
+        });
+      }
 
       totalUsage.input_tokens += response.usage.input_tokens;
       totalUsage.output_tokens += response.usage.output_tokens;
@@ -87,6 +104,7 @@ export function createInvoke(deps: InvokeDeps) {
           output: response.content.trim() as InvokeResult<TSchema>["output"],
           raw: lastRaw,
           usage: totalUsage,
+          agent: summarizeAgent(row),
         };
       }
 
@@ -96,6 +114,7 @@ export function createInvoke(deps: InvokeDeps) {
           output: output as InvokeResult<TSchema>["output"],
           raw: lastRaw,
           usage: totalUsage,
+          agent: summarizeAgent(row),
         };
       } catch (err) {
         if (
@@ -112,12 +131,16 @@ export function createInvoke(deps: InvokeDeps) {
           });
           continue;
         }
+        if (err instanceof AgentRuntimeError && (err.detail.type === "parse" || err.detail.type === "validate")) {
+          throw new AgentRuntimeError({ ...err.detail, usage: { ...totalUsage } });
+        }
         throw err;
       }
     }
 
     throw new AgentRuntimeError({
       type: "provider",
+      usage: { ...totalUsage },
       cause: new Error(`invoke() exceeded MAX_TOOL_LOOPS=${MAX_TOOL_LOOPS} without final answer.`),
     });
   };
