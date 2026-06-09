@@ -4,7 +4,7 @@
 
 ## What this repo is *(project)*
 
-`agent-playground` is a Next.js app for configuring and exercising multi-provider LLM agents. It lets a developer or AI engineer at Dragonflow group agents into projects, configure each agent's prompt / tools / model / voice / Slack channel / next-agent handoff, validate agent output schemas, and try the agent live in a chat-style playground that streams responses and shows tool calls.
+`Dragonflow_Agents` is a Next.js app for configuring and exercising multi-provider LLM agents. It lets a developer or AI engineer at Dragonflow group agents into projects, configure each agent's prompt / tools / model / voice / Slack channel / next-agent handoff, validate agent output schemas, and try the agent live in a chat-style playground that streams responses and shows tool calls.
 
 The provider layer abstracts Anthropic, Google, and OpenAI behind a single interface (`lib/providers/`); the adapter layer (`lib/adapters/`) abstracts where agent configuration lives ("home" vs "remote" backends, via Supabase under the hood). MCP tool configuration is first-class.
 
@@ -18,11 +18,11 @@ This repo is a **sibling repo** to [`Dragonflow_Core`](https://github.com/dragon
 
 3. **Check for playbook drift at session start.** *(synced from playbook → syncing.md)* After `git status` and after reading STATUS.md, read the sync banner's commit SHA at the top of this file and compare it against the playbook's [CHANGELOG.md](https://github.com/dragonflowio/playbook/blob/main/CHANGELOG.md). If newer entries exist that carry an **adopters: sync** note, surface them to the user *before* starting other work and ask whether to sync now or defer. Don't sync silently — sync PRs change the AGENTS.md rules an in-flight plan might rely on.
 
-4. **If you are changing user-visible behavior, read [docs/UX/experience.md](docs/UX/experience.md) first.** *(synced from playbook → agents-md.md)* That file is the folder guide for `docs/UX/`. Per-app experience docs at `docs/UX/<app>/<app>-experience.md` are the canonical source of truth for what each app does from the user's perspective. The agent-playground experience doc lives at [`docs/UX/agent-playground/agent-playground-experience.md`](docs/UX/agent-playground/agent-playground-experience.md).
+4. **If you are changing user-visible behavior, read [docs/UX/experience.md](docs/UX/experience.md) first.** *(synced from playbook → agents-md.md)* That file is the folder guide for `docs/UX/`. Per-app experience docs at `docs/UX/<app>/<app>-experience.md` are the canonical source of truth for what each app does from the user's perspective. The Dragonflow_Agents experience doc lives at [`docs/UX/Dragonflow_Agents/Dragonflow_Agents-experience.md`](docs/UX/Dragonflow_Agents/Dragonflow_Agents-experience.md).
 
 5. **This is NOT the Next.js you know.** *(project)* This repo runs a Next.js version with breaking changes — APIs, conventions, and file structure may differ from your training data. Before writing or modifying any Next.js code (routes, layouts, server components, middleware, config), read the relevant guide in `node_modules/next/dist/docs/`. Heed deprecation notices. Do not rely on patterns from earlier Next.js versions.
 
-6. **Untriaged pre-adoption work lives on [`wip/2026-06-01-pre-adoption`](https://github.com/dragonflowio/agent-playground/tree/wip/2026-06-01-pre-adoption).** *(project)* That branch holds ~86 files of feature scaffolding (the agents/projects/settings/api routes, the lib/adapters and lib/providers/lib/supabase layers, the additional shadcn UI components, etc.) that was uncommitted on `main` at adoption time. Treat it as a backlog of work to triage into real plans (`feat/plan-<N>-<slug>` branches) — not as the starting point for new feature work, and not as code to silently `git merge` into `main`.
+6. **Untriaged pre-adoption work lives on [`wip/2026-06-01-pre-adoption`](https://github.com/dragonflowio/Dragonflow_Agents/tree/wip/2026-06-01-pre-adoption).** *(project)* That branch holds ~86 files of feature scaffolding (the agents/projects/settings/api routes, the lib/adapters and lib/providers/lib/supabase layers, the additional shadcn UI components, etc.) that was uncommitted on `main` at adoption time. Treat it as a backlog of work to triage into real plans (`feat/plan-<N>-<slug>` branches) — not as the starting point for new feature work, and not as code to silently `git merge` into `main`.
 
 ## Branch and PR conventions *(synced from playbook → branch-naming.md)*
 

@@ -62,4 +62,4 @@ When an app serves multiple user segments, keep segments as `##` sections inside
 
 ## Existing docs in this folder *(project)*
 
-- [`agent-playground/agent-playground-experience.md`](agent-playground/agent-playground-experience.md) — stub (Purpose + Audience only at adoption). Feature-walkthrough content will land as features ship to `main`.
+- [`Dragonflow_Agents/Dragonflow_Agents-experience.md`](Dragonflow_Agents/Dragonflow_Agents-experience.md) — stub (Purpose + Audience only at adoption). Feature-walkthrough content will land as features ship to `main`.
