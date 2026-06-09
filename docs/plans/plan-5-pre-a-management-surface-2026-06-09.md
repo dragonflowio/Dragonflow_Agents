@@ -1,7 +1,8 @@
 ---
 kind: feature
 autonomy: agent-runnable
-status: in-progress
+status: completed
+completed_on: 2026-06-09
 created: 2026-06-09
 repos:
   - Dragonflow_Agents
@@ -9,7 +10,7 @@ repos:
 
 # Plan 5-pre-a — Land the management surface from `wip/2026-06-01-pre-adoption`
 
-**Status:** In progress
+**Status:** Completed 2026-06-09 ([#11](https://github.com/dragonflowio/Dragonflow_Agents/pull/11))
 **Created:** 2026-06-09
 **Repo:** `Dragonflow_Agents`
 **Branch:** `feat/plan-5-pre-a-management-surface`
