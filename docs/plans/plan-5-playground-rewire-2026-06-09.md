@@ -1,7 +1,8 @@
 ---
 kind: feature
 autonomy: needs-checkpoints
-status: in-progress
+status: completed
+completed_on: 2026-06-09
 created: 2026-06-09
 repos:
   - Dragonflow_Agents
@@ -9,7 +10,7 @@ repos:
 
 # Plan 5 — Playground rewired onto `@dragonflowio/agent-runtime`
 
-**Status:** Phase 1 (Code) — plan file committed, awaiting user review before implementation.
+**Status:** Completed 2026-06-09 ([#14](https://github.com/dragonflowio/Dragonflow_Agents/pull/14))
 **Created:** 2026-06-09
 **Repo:** `Dragonflow_Agents`
 **Branch:** `feat/plan-5-playground-rewire` (blueprint-locked)
