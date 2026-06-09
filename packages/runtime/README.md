@@ -65,9 +65,13 @@ const { output: reply } = await runtime.invoke({
 });
 ```
 
+`InvokeResult` carries `{ output, raw, usage, agent }`. `agent` is `{ name, model, provider }` — useful for audit-log columns that pin a result to the model that produced it (since `0.2.0`).
+
 ## Error envelope
 
 Every failure is wrapped in `AgentRuntimeError` with a discriminated `detail` union — `load | provider | parse | validate | tool`. Use `serializeError(err)` for audit-log writes.
+
+`provider`, `parse`, and `validate` variants carry an optional `usage` field so token counts survive the error path when the provider already returned them (since `0.2.0`).
 
 ```ts
 import { AgentRuntimeError, serializeError } from "@dragonflowio/agent-runtime";
@@ -98,7 +102,7 @@ What's in the library vs. what stays in the consuming repo is the [contract's *B
 
 ## Status
 
-Plan 3 of the [agent-runtime blueprint](https://github.com/dragonflowio/playbook/blob/main/docs/agent-runtime-blueprint-2026-06-06.md).
+Plan 3 of the [agent-runtime blueprint](https://github.com/dragonflowio/playbook/blob/main/docs/agent-runtime-blueprint-2026-06-06.md). Pilot adoption (Plan 4) shipped in [Dragonflow_Canvas#6](https://github.com/dragonflowio/Dragonflow_Canvas/pull/6); its [contract gap log](https://github.com/dragonflowio/Dragonflow_Canvas/blob/main/docs/agent-runtime-pilot-gaps.md) drives the `0.2.0` additions above.
 
-- Plan 4 (pilot adoption in `Dragonflow_Canvas`) is the next step; expect minor-version bumps as Canvas surfaces contract gaps.
 - Plan 5 rewires the [`Dragonflow_Agents`](https://github.com/dragonflowio/Dragonflow_Agents) playground onto this library.
+- Plan 6 fan-out is in progress per repo (`Dragonflow_Product`, `Titos_Automations`, `Proveedores-Admin`).

@@ -80,8 +80,15 @@ export type InvokeArgs<TSchema extends ZodTypeAny | undefined = undefined> = {
   retryOnParseError?: boolean;
 };
 
+export type InvokeAgentSummary = {
+  name: string;
+  model: string;
+  provider: AgentProvider;
+};
+
 export type InvokeResult<TSchema extends ZodTypeAny | undefined> = {
   output: TSchema extends ZodTypeAny ? z.infer<TSchema> : string;
   raw: ProviderRawResponse;
   usage: Usage;
+  agent: InvokeAgentSummary;
 };

@@ -62,6 +62,11 @@ describe("invoke", () => {
     const result = await invoke({ slug: "writer", input: "hi" });
     expect(result.output).toBe("answer");
     expect(result.usage).toEqual({ input_tokens: 10, output_tokens: 1 });
+    expect(result.agent).toEqual({
+      name: "writer",
+      model: "claude-sonnet-4-5",
+      provider: "anthropic",
+    });
   });
 
   it("parses a structured-output agent", async () => {
@@ -118,7 +123,7 @@ describe("invoke", () => {
     });
   });
 
-  it("throws parse when structured output is not JSON", async () => {
+  it("throws parse when structured output is not JSON; usage threaded through", async () => {
     const schema = z.object({ verdict: z.string() });
     const { invoke } = setupInvoke(
       [structuredRow],
@@ -132,11 +137,11 @@ describe("invoke", () => {
       ]
     );
     await expect(invoke({ slug: "judger", input: "?", schema })).rejects.toMatchObject({
-      detail: { type: "parse" },
+      detail: { type: "parse", usage: { input_tokens: 1, output_tokens: 1 } },
     });
   });
 
-  it("throws validate when JSON fails Zod", async () => {
+  it("throws validate when JSON fails Zod; usage threaded through", async () => {
     const schema = z.object({ verdict: z.string() });
     const { invoke } = setupInvoke(
       [structuredRow],
@@ -150,7 +155,7 @@ describe("invoke", () => {
       ]
     );
     await expect(invoke({ slug: "judger", input: "?", schema })).rejects.toMatchObject({
-      detail: { type: "validate" },
+      detail: { type: "validate", usage: { input_tokens: 1, output_tokens: 1 } },
     });
   });
 
