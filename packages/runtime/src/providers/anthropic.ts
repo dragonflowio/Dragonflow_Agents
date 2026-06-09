@@ -113,6 +113,22 @@ function toAnthropicMessages(messages: ProviderRequest["messages"]) {
       });
       continue;
     }
+    if (message.role === "assistant" && message.toolCalls?.length) {
+      const blocks: Array<Record<string, unknown>> = [];
+      if (message.content) {
+        blocks.push({ type: "text", text: message.content });
+      }
+      for (const call of message.toolCalls) {
+        blocks.push({
+          type: "tool_use",
+          id: call.id,
+          name: call.name,
+          input: call.arguments,
+        });
+      }
+      out.push({ role: "assistant", content: blocks });
+      continue;
+    }
     out.push({ role: message.role, content: message.content });
   }
   return out;

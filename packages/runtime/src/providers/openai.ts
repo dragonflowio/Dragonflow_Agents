@@ -105,6 +105,24 @@ function toOpenAIMessages(req: ProviderRequest) {
       });
       continue;
     }
+    if (message.role === "assistant" && message.toolCalls?.length) {
+      out.push({
+        role: "assistant",
+        content: message.content || null,
+        tool_calls: message.toolCalls.map((call) => ({
+          id: call.id,
+          type: "function",
+          function: {
+            name: call.name,
+            arguments:
+              typeof call.arguments === "string"
+                ? call.arguments
+                : JSON.stringify(call.arguments ?? {}),
+          },
+        })),
+      });
+      continue;
+    }
     out.push({ role: message.role, content: message.content });
   }
   return out;

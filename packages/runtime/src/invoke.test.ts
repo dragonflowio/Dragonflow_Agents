@@ -116,6 +116,53 @@ describe("invoke", () => {
     expect(getCallCount()).toBe(2);
   });
 
+  it("preserves toolCalls on the assistant message echoed back to the provider", async () => {
+    // Regression: without toolCalls preserved, Anthropic rejects the next turn
+    // with "tool_result has no corresponding tool_use in previous message".
+    const registry = createToolRegistry();
+    registry.register("echo", {
+      description: "echo",
+      schema: z.object({ msg: z.string() }),
+      handler: async ({ msg }) => ({ echoed: msg }),
+    });
+    const loader = createLoader({ client: createFixtureSupabase([toolRow]) });
+    const seen: Array<ReadonlyArray<unknown>> = [];
+    const provider: Provider = {
+      async generate(req): Promise<ProviderResponse> {
+        seen.push(req.messages.map((m) => ({ ...m })));
+        if (seen.length === 1) {
+          return {
+            content: "thinking…",
+            toolCalls: [{ id: "t1", name: "echo", arguments: { msg: "hi" } }],
+            usage: { input_tokens: 1, output_tokens: 1 },
+            raw: null,
+          };
+        }
+        return {
+          content: "done",
+          toolCalls: [],
+          usage: { input_tokens: 1, output_tokens: 1 },
+          raw: null,
+        };
+      },
+    };
+    const invoke = createInvoke({ loader, providerFor: () => provider });
+    await invoke({ slug: "doer", input: "go", tools: registry });
+
+    expect(seen).toHaveLength(2);
+    const secondCall = seen[1]!;
+    expect(secondCall).toHaveLength(3);
+    const assistantTurn = secondCall[1] as {
+      role: string;
+      content: string;
+      toolCalls?: Array<{ id: string; name: string }>;
+    };
+    expect(assistantTurn.role).toBe("assistant");
+    expect(assistantTurn.toolCalls).toEqual([
+      { id: "t1", name: "echo", arguments: { msg: "hi" } },
+    ]);
+  });
+
   it("throws load when slug is missing", async () => {
     const { invoke } = setupInvoke([textRow], []);
     await expect(invoke({ slug: "missing", input: "hi" })).rejects.toMatchObject({

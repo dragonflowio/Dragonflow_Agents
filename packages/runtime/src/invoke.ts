@@ -83,6 +83,7 @@ export function createInvoke(deps: InvokeDeps) {
         conversation.push({
           role: "assistant",
           content: response.content,
+          toolCalls: response.toolCalls,
         });
         const results = await Promise.all(
           response.toolCalls.map((call) => runTool(tools, call.name, call.arguments, signal))
