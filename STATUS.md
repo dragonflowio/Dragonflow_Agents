@@ -22,6 +22,7 @@
 ## Intentionally unfinished
 
 - 2026-06-01 — No `docs/UX/agent-playground/agent-playground-experience.md` content beyond the *Purpose* and *Audience* sections. Per [`docs/UX/experience.md`](docs/UX/experience.md), feature-walkthrough content follows the build; the rest will be filled in as features land on `main` (not as the WIP triage merges them).
+- **No LLM call sites as of 2026-06-08.** When the first LLM is introduced, follow https://github.com/dragonflowio/playbook/blob/main/playbook/agents-table.md and add the project rule per the agent-runtime blueprint's Plan 6 pattern. Remove this row in the same PR that lands the first agents-table row.
 
 ## Not in scope right now
 
