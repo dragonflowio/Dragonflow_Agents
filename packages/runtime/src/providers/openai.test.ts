@@ -35,6 +35,38 @@ describe("createOpenAIProvider", () => {
     expect(body.messages[1]).toEqual({ role: "user", content: "hi" });
   });
 
+  it("forwards temperature when provided and omits it when undefined", async () => {
+    let withBody: Record<string, unknown> | undefined;
+    let withoutBody: Record<string, unknown> | undefined;
+    const provider = createOpenAIProvider({
+      apiKey: "k",
+      fetch: async (_url, init) => {
+        const body = JSON.parse((init as RequestInit).body as string);
+        if (body.temperature !== undefined) withBody = body;
+        else withoutBody = body;
+        return jsonResponse({
+          choices: [{ message: { content: "ok", tool_calls: undefined } }],
+          usage: { prompt_tokens: 0, completion_tokens: 0 },
+        });
+      },
+    });
+    await provider.generate({
+      model: "gpt-4o",
+      system: "",
+      messages: [{ role: "user", content: "x" }],
+      max_tokens: 10,
+      temperature: 0.2,
+    });
+    await provider.generate({
+      model: "gpt-4o",
+      system: "",
+      messages: [{ role: "user", content: "x" }],
+      max_tokens: 10,
+    });
+    expect(withBody?.temperature).toBe(0.2);
+    expect(withoutBody && "temperature" in withoutBody).toBe(false);
+  });
+
   it("parses tool calls + JSON arguments", async () => {
     const provider = createOpenAIProvider({
       apiKey: "k",

@@ -40,6 +40,31 @@ describe("createLoader", () => {
     await expect(loader.load("broken")).rejects.toBeInstanceOf(AgentRuntimeError);
   });
 
+  it("accepts optional config.temperature and surfaces it on the row", async () => {
+    const loader = createLoader({
+      client: createFixtureSupabase([
+        { ...valid, name: "warm", config: { ...valid.config, temperature: 0.2 } },
+      ]),
+    });
+    const row = await loader.load("warm");
+    expect(row.config.temperature).toBe(0.2);
+  });
+
+  it("rejects invalid config.temperature (non-number or negative)", async () => {
+    const loader = createLoader({
+      client: createFixtureSupabase([
+        {
+          ...valid,
+          name: "bad-temp",
+          config: { ...valid.config, temperature: "warm" as never },
+        },
+      ]),
+    });
+    await expect(loader.load("bad-temp")).rejects.toMatchObject({
+      detail: { type: "load" },
+    });
+  });
+
   it("throws load when config.provider is invalid", async () => {
     const loader = createLoader({
       client: createFixtureSupabase([

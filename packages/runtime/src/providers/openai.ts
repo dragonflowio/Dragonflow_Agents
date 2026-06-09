@@ -16,6 +16,7 @@ export function createOpenAIProvider(env: ProviderEnv): Provider {
       const body = {
         model: req.model,
         max_tokens: req.max_tokens,
+        ...(typeof req.temperature === "number" ? { temperature: req.temperature } : {}),
         messages,
         ...(req.tools?.length
           ? {

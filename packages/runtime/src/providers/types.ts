@@ -11,6 +11,7 @@ export type ProviderRequest = {
   system: string;
   messages: ChatMessage[];
   max_tokens: number;
+  temperature?: number;
   tools?: ProviderToolSpec[];
   signal?: AbortSignal;
 };

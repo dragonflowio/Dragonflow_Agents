@@ -33,6 +33,39 @@ describe("createGoogleProvider", () => {
     expect(calledUrl).toContain("key=ai-x");
   });
 
+  it("forwards temperature in generationConfig when provided and omits it when undefined", async () => {
+    const seenBodies: Array<Record<string, unknown>> = [];
+    const provider = createGoogleProvider({
+      apiKey: "k",
+      fetch: async (_url, init) => {
+        seenBodies.push(JSON.parse((init as RequestInit).body as string));
+        return jsonResponse({
+          candidates: [{ content: { parts: [{ text: "ok" }] } }],
+          usageMetadata: { promptTokenCount: 0, candidatesTokenCount: 0 },
+        });
+      },
+    });
+    await provider.generate({
+      model: "m",
+      system: "",
+      messages: [{ role: "user", content: "x" }],
+      max_tokens: 10,
+      temperature: 0.4,
+    });
+    await provider.generate({
+      model: "m",
+      system: "",
+      messages: [{ role: "user", content: "x" }],
+      max_tokens: 10,
+    });
+    const withGc = seenBodies[0]!.generationConfig as Record<string, unknown>;
+    const withoutGc = seenBodies[1]!.generationConfig as Record<string, unknown>;
+    expect(withGc.temperature).toBe(0.4);
+    expect(withGc.maxOutputTokens).toBe(10);
+    expect("temperature" in withoutGc).toBe(false);
+    expect(withoutGc.maxOutputTokens).toBe(10);
+  });
+
   it("extracts function calls", async () => {
     const provider = createGoogleProvider({
       apiKey: "k",

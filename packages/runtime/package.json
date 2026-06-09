@@ -1,6 +1,6 @@
 {
   "name": "@dragonflowio/agent-runtime",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Cross-project LLM agent runtime for Dragonflow — loads agent rows from a per-project `agents` Supabase table and invokes Anthropic / Google / OpenAI models against the v0.1+ invocation contract.",
   "license": "MIT",
   "author": "Dragonflow <fernando@dragonflow.io>",

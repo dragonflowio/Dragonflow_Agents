@@ -15,6 +15,7 @@ export function createAnthropicProvider(env: ProviderEnv): Provider {
       const body = {
         model: req.model,
         max_tokens: req.max_tokens,
+        ...(typeof req.temperature === "number" ? { temperature: req.temperature } : {}),
         system: req.system || undefined,
         messages: toAnthropicMessages(req.messages),
         ...(req.tools?.length
