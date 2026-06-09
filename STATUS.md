@@ -11,7 +11,8 @@
 | _None in flight._ |  |  |  |  |
 
 ## Backlog
-- 2026-06-08 — Six post-v1 deferred features from the original phase 1–4 effort (voice session recording, agentic agent creation, `prompt_id` fetch from OpenAI prompt store, prompt versioning, large file uploads, agent chaining execution). See [`docs/pre-plan-deferred-features-2026-06-08.md`](docs/pre-plan-deferred-features-2026-06-08.md). Triage alongside the `wip/2026-06-01-pre-adoption` work — most items depend on shape decisions there.
+- 2026-06-09 — `@dragonflowio/agent-runtime` releases should run through CI (GitHub Actions) so npm provenance works. The 0.2.1 release ([#16](https://github.com/dragonflowio/Dragonflow_Agents/pull/16)) was published manually with `--provenance=false` because OIDC isn't available outside CI; the package.json still has `publishConfig.provenance: true` which is now misleading. Either add a release workflow or drop the flag.
+- 2026-06-08 — Six post-v1 deferred features from the original phase 1–4 effort (voice session recording, agentic agent creation, `prompt_id` fetch from OpenAI prompt store, prompt versioning, large file uploads, agent chaining execution). See [`docs/pre-plan-deferred-features-2026-06-08.md`](docs/pre-plan-deferred-features-2026-06-08.md). Triage when one of the features is needed; the original "alongside `wip/2026-06-01-pre-adoption`" hint is moot now that Plans 5-pre-a and 5 absorbed that work.
 
 ## In flight
 
