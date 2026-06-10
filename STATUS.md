@@ -8,7 +8,7 @@
 
 | Plan | Branch | Agent | Last commit | Status |
 |---|---|---|---|---|
-| Runtime 0.3.0 — id-lookup + retry + skipLLM | feat/runtime-0.3.0-id-lookup-retry-skip-llm | claude | 2026-06-09 | Code complete; Verify passed; PR ready-for-review |
+| _None in flight._ |  |  |  |  |
 
 ## Backlog
 - 2026-06-09 — `@dragonflowio/agent-runtime` releases should run through CI (GitHub Actions) so npm provenance works. The 0.2.1 release ([#16](https://github.com/dragonflowio/Dragonflow_Agents/pull/16)) was published manually with `--provenance=false` because OIDC isn't available outside CI; the package.json still has `publishConfig.provenance: true` which is now misleading. Either add a release workflow or drop the flag.

@@ -1,7 +1,8 @@
 ---
 kind: feature
 autonomy: needs-checkpoints
-status: in_progress
+status: completed
+completed_on: 2026-06-09
 repos:
   - Dragonflow_Agents
 ---
@@ -17,10 +18,10 @@ repos:
   STATUS.md row.
 -->
 
-**Status:** In progress
+**Status:** Completed 2026-06-09 ([Dragonflow_Agents#20](https://github.com/dragonflowio/Dragonflow_Agents/pull/20))
 **Created:** 2026-06-09
 **Repo:** `Dragonflow_Agents`
-**Branch:** `feat/runtime-0.3.0-id-lookup-retry-skip-llm`
+**Branch:** `feat/runtime-0.3.0-id-lookup-retry-skip-llm` (merged)
 **Intended owner:** One implementation agent
 **Related:**
 - [`playbook/agent-invocation-contract.md` → *Candidate amendments for 0.3*](https://github.com/dragonflowio/playbook/blob/main/playbook/agent-invocation-contract.md#candidate-amendments-for-03-still-queued) — the spec this minor implements.
