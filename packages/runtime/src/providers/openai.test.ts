@@ -33,6 +33,8 @@ describe("createOpenAIProvider", () => {
     const body = JSON.parse(seen!.body as string);
     expect(body.messages[0]).toEqual({ role: "system", content: "be helpful" });
     expect(body.messages[1]).toEqual({ role: "user", content: "hi" });
+    expect(body.max_completion_tokens).toBe(100);
+    expect("max_tokens" in body).toBe(false);
   });
 
   it("forwards temperature when provided and omits it when undefined", async () => {

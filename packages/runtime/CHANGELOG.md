@@ -1,5 +1,16 @@
 # `@dragonflowio/agent-runtime` changelog
 
+## 0.3.1 — 2026-06-09
+
+**Bugfix.** The OpenAI provider sent `max_tokens` in the chat-completions request body. OpenAI's GPT-5 family (and `o1`/`o3`) **rejects** `max_tokens` with HTTP 400 (`Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.`), so every consumer whose agent rows use a GPT-5+ model could not invoke through the runtime at all. Rename the chat-completions body field from `max_tokens` to `max_completion_tokens`. Row-level `config.max_tokens` (the [agents-table convention](https://github.com/dragonflowio/playbook/blob/main/playbook/agents-table.md#standard-config-keys)) keeps its name — only the wire-level OpenAI request changes.
+
+- `src/providers/openai.ts` — chat-completions body uses `max_completion_tokens: req.max_tokens`.
+- `src/providers/openai.test.ts` — the existing Authorization-header test now also asserts `max_completion_tokens` is sent and `max_tokens` is not.
+
+Per OpenAI's published guidance, `max_completion_tokens` is the recommended forward-going parameter and `max_tokens` is deprecated. `gpt-4o`, `gpt-4-turbo`, and the `o1`/`o3`/`gpt-5*` families all accept `max_completion_tokens`. The legacy `gpt-3.5-turbo` family only accepts `max_tokens` and is not used by any current adopter (verified across the in-thread fan-out + post-thread Input).
+
+Surfaced by the [`Dragonflow_Input` Plan 6 PR](https://github.com/dragonflowio/Dragonflow-Input/pull/10) (post-thread Plan-6-shaped adoption). Canvas's Plan 4 pilot didn't surface it (Anthropic-only); the four Plan 6 fan-out PRs didn't either (their OpenAI rows used `gpt-4o`, not `gpt-5*`). Per the blueprint's blocking semantics, this patch ships before the Input PR re-pins to `^0.3.1`.
+
 ## 0.3.0 — 2026-06-09
 
 Three additive amendments from the v0.1 contract's *Candidate amendments for 0.3 (still queued)* section. All non-breaking — pinned `^0.2.x` consumers keep working untouched.
