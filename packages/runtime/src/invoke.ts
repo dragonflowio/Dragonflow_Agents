@@ -11,6 +11,8 @@ import type {
   InvokeInput,
   InvokeResult,
   RegisteredTool,
+  RetryPolicy,
+  SkipLLMOption,
   ToolRegistry,
   Usage,
 } from "./types.js";
@@ -24,17 +26,24 @@ const MAX_TOOL_LOOPS = 5;
 export type InvokeDeps = {
   loader: AgentLoader;
   providerFor(row: AgentRow): Provider;
+  skipLLM?: SkipLLMOption;
 };
 
 export function createInvoke(deps: InvokeDeps) {
   return async function invoke<TSchema extends ZodTypeAny | undefined = undefined>(
     args: InvokeArgs<TSchema>
   ): Promise<InvokeResult<TSchema>> {
-    const { slug, input, schema, tools, retryOnParseError } = args;
+    const { input, schema, tools } = args;
     const signal = args.signal ?? new AbortController().signal;
 
-    const row = await deps.loader.load(slug);
+    const row = await loadRow(deps.loader, args);
+
+    if (deps.skipLLM !== undefined && deps.skipLLM !== false) {
+      return runSkipLLM(deps.skipLLM, row, schema);
+    }
+
     const provider = deps.providerFor(row);
+    const retryMode = resolveRetry(args);
 
     const { messages, systemOverride } = resolveInput(input);
     const system = systemOverride ?? row.system_instruction;
@@ -122,20 +131,25 @@ export function createInvoke(deps: InvokeDeps) {
         };
       } catch (err) {
         if (
-          retryOnParseError &&
-          !attemptedParseRetry &&
           err instanceof AgentRuntimeError &&
           (err.detail.type === "parse" || err.detail.type === "validate")
         ) {
-          attemptedParseRetry = true;
-          conversation.push({ role: "assistant", content: response.content });
-          conversation.push({
-            role: "user",
-            content: `Your previous response failed structured-output validation. Error: ${err.message}. Reply again with valid JSON only.`,
-          });
-          continue;
-        }
-        if (err instanceof AgentRuntimeError && (err.detail.type === "parse" || err.detail.type === "validate")) {
+          if (retryMode !== "none" && !attemptedParseRetry) {
+            attemptedParseRetry = true;
+            conversation.push({ role: "assistant", content: response.content });
+            if (retryMode === "json-repair") {
+              conversation.push({
+                role: "user",
+                content: `That wasn't valid JSON (${err.message}). Return it corrected.`,
+              });
+            } else {
+              conversation.push({
+                role: "user",
+                content: `Your previous response failed structured-output validation. Error: ${err.message}. Reply again with valid JSON only.`,
+              });
+            }
+            continue;
+          }
           throw new AgentRuntimeError({ ...err.detail, usage: { ...totalUsage } });
         }
         throw err;
@@ -147,6 +161,69 @@ export function createInvoke(deps: InvokeDeps) {
       usage: { ...totalUsage },
       cause: new Error(`invoke() exceeded MAX_TOOL_LOOPS=${MAX_TOOL_LOOPS} without final answer.`),
     });
+  };
+}
+
+async function loadRow(
+  loader: AgentLoader,
+  args: { slug?: string; id?: string }
+): Promise<AgentRow> {
+  const hasSlug = typeof args.slug === "string" && args.slug.length > 0;
+  const hasId = typeof args.id === "string" && args.id.length > 0;
+  if (hasSlug && hasId) {
+    throw new AgentRuntimeError({
+      type: "load",
+      slug: args.slug ?? "",
+      cause: new Error(`invoke() received both "slug" and "id" — exactly one is required.`),
+    });
+  }
+  if (!hasSlug && !hasId) {
+    throw new AgentRuntimeError({
+      type: "load",
+      slug: "",
+      cause: new Error(`invoke() received neither "slug" nor "id" — exactly one is required.`),
+    });
+  }
+  if (hasId) {
+    return loader.byId(args.id!);
+  }
+  return loader.byName(args.slug!);
+}
+
+function resolveRetry(args: {
+  retry?: RetryPolicy;
+  retryOnParseError?: boolean;
+}): RetryPolicy {
+  if (args.retry) return args.retry;
+  if (args.retryOnParseError === true) return "reprompt-with-error";
+  return "none";
+}
+
+function runSkipLLM<TSchema extends ZodTypeAny | undefined>(
+  option: Exclude<SkipLLMOption, false>,
+  row: AgentRow,
+  _schema: TSchema
+): InvokeResult<TSchema> {
+  if (typeof option === "function") {
+    return option(row.name) as InvokeResult<TSchema>;
+  }
+  // boolean true: row-level fixture
+  const fixture = row.config.skip_llm_fixture;
+  if (fixture === undefined) {
+    throw new AgentRuntimeError({
+      type: "load",
+      slug: row.name,
+      cause: new Error(
+        `skipLLM=true but agent row "${row.name}" has no "config.skip_llm_fixture". ` +
+          `Either set the fixture on the row, or pass skipLLM as a function to createRuntime().`
+      ),
+    });
+  }
+  return {
+    output: fixture as InvokeResult<TSchema>["output"],
+    raw: { skipLLM: true },
+    usage: { input_tokens: 0, output_tokens: 0 },
+    agent: summarizeAgent(row),
   };
 }
 
