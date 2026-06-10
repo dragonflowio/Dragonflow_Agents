@@ -5,7 +5,7 @@ import { createLoader } from "./loader.js";
 import type { AgentLoader } from "./loader.js";
 import { createProvider } from "./providers/index.js";
 import type { Provider } from "./providers/types.js";
-import type { AgentRow, InvokeArgs, InvokeResult, ToolRegistry } from "./types.js";
+import type { AgentRow, InvokeArgs, InvokeResult, SkipLLMOption, ToolRegistry } from "./types.js";
 import type { ZodTypeAny } from "zod";
 
 export type RuntimeOptions = {
@@ -19,6 +19,11 @@ export type RuntimeOptions = {
     openaiApiKey?: string;
     googleApiKey?: string;
   };
+  /**
+   * Deterministic-bypass hatch (0.3.0). See `SkipLLMOption` in `types.ts`.
+   * When unset, falls back to `process.env.SKIP_LLM === "1"` (boolean mode).
+   */
+  skipLLM?: SkipLLMOption;
   now?: () => number;
 };
 
@@ -34,6 +39,7 @@ export function createRuntime(opts: RuntimeOptions): Runtime {
   const loader = createLoader({ client, cache: opts.cache, now: opts.now });
   const providerCache = new Map<string, Provider>();
   const fetchImpl = opts.providerEnv?.fetch ?? globalThis.fetch;
+  const skipLLM = resolveSkipLLM(opts.skipLLM);
 
   function providerFor(row: AgentRow): Provider {
     const cached = providerCache.get(row.config.provider);
@@ -46,7 +52,7 @@ export function createRuntime(opts: RuntimeOptions): Runtime {
     return provider;
   }
 
-  const invoke = createInvoke({ loader, providerFor });
+  const invoke = createInvoke({ loader, providerFor, skipLLM });
 
   return { invoke, loader };
 }
@@ -69,6 +75,15 @@ function pickApiKey(
     case "google":
       return env?.googleApiKey;
   }
+}
+
+function resolveSkipLLM(option: SkipLLMOption | undefined): SkipLLMOption | undefined {
+  if (option !== undefined) return option;
+  // Fall back to SKIP_LLM=1 from process.env (matches Titos-Inventario's existing hatch).
+  if (typeof process !== "undefined" && process.env && process.env.SKIP_LLM === "1") {
+    return true;
+  }
+  return undefined;
 }
 
 export type { ToolRegistry };

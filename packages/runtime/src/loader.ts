@@ -9,55 +9,70 @@ export type LoaderOptions = {
 };
 
 export type AgentLoader = {
+  /**
+   * Load an agent row by its `name` column (the slug). 0.2.x surface — preserved.
+   * Equivalent to `byName(slug)`.
+   */
   load(slug: string): Promise<AgentRow>;
+  byName(slug: string): Promise<AgentRow>;
+  byId(id: string): Promise<AgentRow>;
 };
 
 type CacheEntry = { row: AgentRow; expiresAt: number };
+type LookupMode = "name" | "id";
 
 export function createLoader(opts: LoaderOptions): AgentLoader {
   const { client, cache, now = () => Date.now() } = opts;
   const memo = new Map<string, CacheEntry>();
 
+  async function loadBy(mode: LookupMode, key: string): Promise<AgentRow> {
+    const cacheKey = `${mode}:${key}`;
+    if (cache) {
+      const hit = memo.get(cacheKey);
+      if (hit && hit.expiresAt > now()) {
+        return hit.row;
+      }
+    }
+
+    let data: unknown;
+    let error: unknown;
+    try {
+      const result = await client
+        .from("agents")
+        .select("name, model, system_instruction, config")
+        .eq(mode === "name" ? "name" : "id", key)
+        .single();
+      data = (result as { data: unknown }).data;
+      error = (result as { error: unknown }).error;
+    } catch (thrown) {
+      throw new AgentRuntimeError({ type: "load", slug: key, cause: thrown });
+    }
+
+    if (error) {
+      throw new AgentRuntimeError({ type: "load", slug: key, cause: error });
+    }
+    if (!data || typeof data !== "object") {
+      throw new AgentRuntimeError({
+        type: "load",
+        slug: key,
+        cause: new Error(`No agent row returned for ${mode}="${key}".`),
+      });
+    }
+
+    const row = normalizeRow(key, data as Record<string, unknown>);
+    if (cache) {
+      memo.set(cacheKey, { row, expiresAt: now() + cache.ttlMs });
+    }
+    return row;
+  }
+
+  const byName = (slug: string) => loadBy("name", slug);
+  const byId = (id: string) => loadBy("id", id);
+
   return {
-    async load(slug: string): Promise<AgentRow> {
-      if (cache) {
-        const hit = memo.get(slug);
-        if (hit && hit.expiresAt > now()) {
-          return hit.row;
-        }
-      }
-
-      let data: unknown;
-      let error: unknown;
-      try {
-        const result = await client
-          .from("agents")
-          .select("name, model, system_instruction, config")
-          .eq("name", slug)
-          .single();
-        data = (result as { data: unknown }).data;
-        error = (result as { error: unknown }).error;
-      } catch (thrown) {
-        throw new AgentRuntimeError({ type: "load", slug, cause: thrown });
-      }
-
-      if (error) {
-        throw new AgentRuntimeError({ type: "load", slug, cause: error });
-      }
-      if (!data || typeof data !== "object") {
-        throw new AgentRuntimeError({
-          type: "load",
-          slug,
-          cause: new Error(`No agent row returned for slug "${slug}".`),
-        });
-      }
-
-      const row = normalizeRow(slug, data as Record<string, unknown>);
-      if (cache) {
-        memo.set(slug, { row, expiresAt: now() + cache.ttlMs });
-      }
-      return row;
-    },
+    load: byName,
+    byName,
+    byId,
   };
 }
 
@@ -71,21 +86,21 @@ function normalizeRow(slug: string, raw: Record<string, unknown>): AgentRow {
     throw new AgentRuntimeError({
       type: "load",
       slug,
-      cause: new Error(`Agent row for slug "${slug}" is missing "name".`),
+      cause: new Error(`Agent row for "${slug}" is missing "name".`),
     });
   }
   if (!model) {
     throw new AgentRuntimeError({
       type: "load",
       slug,
-      cause: new Error(`Agent row for slug "${slug}" is missing "model".`),
+      cause: new Error(`Agent row for "${slug}" is missing "model".`),
     });
   }
   if (system_instruction == null) {
     throw new AgentRuntimeError({
       type: "load",
       slug,
-      cause: new Error(`Agent row for slug "${slug}" is missing "system_instruction".`),
+      cause: new Error(`Agent row for "${slug}" is missing "system_instruction".`),
     });
   }
 
@@ -102,14 +117,14 @@ function normalizeConfig(slug: string, raw: unknown): AgentRowConfig {
     throw new AgentRuntimeError({
       type: "load",
       slug,
-      cause: new Error(`Agent row for slug "${slug}" is missing "config".`),
+      cause: new Error(`Agent row for "${slug}" is missing "config".`),
     });
   }
   if (typeof raw !== "object" || Array.isArray(raw)) {
     throw new AgentRuntimeError({
       type: "load",
       slug,
-      cause: new Error(`Agent row for slug "${slug}" has a non-object "config".`),
+      cause: new Error(`Agent row for "${slug}" has a non-object "config".`),
     });
   }
 
@@ -122,7 +137,7 @@ function normalizeConfig(slug: string, raw: unknown): AgentRowConfig {
       type: "load",
       slug,
       cause: new Error(
-        `Agent row for slug "${slug}" has invalid config.provider (${JSON.stringify(provider)}).`
+        `Agent row for "${slug}" has invalid config.provider (${JSON.stringify(provider)}).`
       ),
     });
   }
@@ -131,7 +146,7 @@ function normalizeConfig(slug: string, raw: unknown): AgentRowConfig {
       type: "load",
       slug,
       cause: new Error(
-        `Agent row for slug "${slug}" has invalid config.max_tokens (${JSON.stringify(max_tokens)}).`
+        `Agent row for "${slug}" has invalid config.max_tokens (${JSON.stringify(max_tokens)}).`
       ),
     });
   }
@@ -143,7 +158,7 @@ function normalizeConfig(slug: string, raw: unknown): AgentRowConfig {
         type: "load",
         slug,
         cause: new Error(
-          `Agent row for slug "${slug}" has invalid config.temperature (${JSON.stringify(temperature)}).`
+          `Agent row for "${slug}" has invalid config.temperature (${JSON.stringify(temperature)}).`
         ),
       });
     }

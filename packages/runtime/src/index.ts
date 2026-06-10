@@ -18,6 +18,8 @@ export type {
   ProviderRawResponse,
   ProviderToolCall,
   RegisteredTool,
+  RetryPolicy,
+  SkipLLMOption,
   ToolContext,
   ToolHandler,
   ToolRegistry,
