@@ -1,5 +1,11 @@
 # `@dragonflowio/agent-runtime` changelog
 
+## 0.2.3 — 2026-06-09
+
+**Peer-range widening.** `peerDependencies.zod` widens from `^3.23.0` to `^3.23.0 || ^4.0.0`. No code change. Consumers pinning zod 4 (e.g., `Proveedores-Admin` at `^4.3.6`) no longer trip `npm ls zod` "invalid" warnings. The only v3-only touchpoint is `zodToJsonSchema` in `invoke.ts`, whose output is shape-compatible across v3 and v4; `schema.safeParse()` (the structured-output path) is part of zod's stable public API on both majors.
+
+Surfaced by [`Proveedores-Admin` Plan 6 PR #28](https://github.com/dragonflowio/Proveedores-Admin/pull/28) Plan 7 sweep one-liner; queued follow-up from [`playbook` Plan 7 PR #44](https://github.com/dragonflowio/playbook/pull/44).
+
 ## 0.2.2 — 2026-06-09
 
 **Bugfix.** The runtime accepted `config.temperature` on agent rows (the type allowed it implicitly via the `[key: string]: unknown` index signature) but silently dropped it on the wire — every provider call used the provider's default temperature. Rows that authored a non-default temperature were effectively ignored.
